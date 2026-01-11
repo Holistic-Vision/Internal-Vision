@@ -1,7 +1,7 @@
 (() => {
   const $ = (s, r=document) => r.querySelector(s);
   const $$ = (s, r=document) => Array.from(r.querySelectorAll(s));
-  const STORE_KEY = "IV_STATE_V1";
+  const STORE_KEY = "IV_STATE_V2";
 
   const defaultState = () => ({
     theme:"dark", route:"dashboard",
@@ -16,7 +16,9 @@
         {id:"r_sleep", label:"Écrans off", time:"22:30", days:[0,1,2,3,4,5,6], active:true}
       ]
     },
-    timer:{running:false, mode:"strength", remainingSec:0, phaseIndex:0, phases:[]}
+    timer:{running:false, mode:"strength", remainingSec:0, phaseIndex:0, phases:[]},
+    jing:{ ejacThisWeek:0, targetEjacPerWeek:3, lastResetISO:null }
+  });
   });
 
   function deepMerge(a,b){
@@ -42,6 +44,20 @@
 
   // Theme
   function applyTheme(){
+    applyAccent();
+  }
+
+  function applyAccent(){
+    const c = state.accent?.color || "#4fd1c5";
+    document.documentElement.style.setProperty("--accent", c);
+    // Accent2 auto = slightly different, keep stable if user sets
+    if(!state.accent?.accent2){
+      document.documentElement.style.setProperty("--accent2", "#60a5fa");
+    }
+  }
+
+  function applyTheme(){
+    applyAccent();
     document.documentElement.dataset.theme = (state.theme==="light") ? "light" : "dark";
     const b=$("#btnTheme"); if(b) b.textContent = (state.theme==="light") ? "Clair" : "Sombre";
   }
@@ -85,6 +101,14 @@
     return `
       <section class="card">
         <div class="h1">Tableau de bord</div>
+        <div class="row" style="margin-top:10px">
+          <div class="col">
+            <div class="badge"><span class="dot ok"></span>Widget: objectif jour (plan + suivi)</div>
+          </div>
+          <div class="col">
+            <div class="badge"><span class="dot warn"></span>Jing: éjaculations semaine ${state.jing?.ejacThisWeek ?? 0}/${state.jing?.targetEjacPerWeek ?? 3}</div>
+          </div>
+        </div>
         <p class="p">Objectif: libérer la testostérone (insuline↓, inflammation↓, sommeil↑, zinc/D↑) + densifier sperme.</p>
         <div class="hr"></div>
         <div class="kpis">
@@ -416,7 +440,104 @@
     `;
   }
 
-  function pageSettings(){
+  
+  function weekKey(d=new Date()){
+    // ISO week key: YYYY-WW
+    const date = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
+    const dayNum = date.getUTCDay() || 7;
+    date.setUTCDate(date.getUTCDate() + 4 - dayNum);
+    const yearStart = new Date(Date.UTC(date.getUTCFullYear(),0,1));
+    const weekNo = Math.ceil((((date - yearStart) / 86400000) + 1)/7);
+    return `${date.getUTCFullYear()}-W${String(weekNo).padStart(2,"0")}`;
+  }
+
+  function ensureWeekReset(){
+    const now = new Date();
+    const wk = weekKey(now);
+    const lastWk = state.jing?._wk || null;
+    if(lastWk !== wk){
+      state.jing = state.jing || {};
+      state.jing._wk = wk;
+      state.jing.ejacThisWeek = 0;
+      save();
+    }
+  }
+
+  function pageJing(){
+    ensureWeekReset();
+    const ej = state.jing?.ejacThisWeek ?? 0;
+    const target = state.jing?.targetEjacPerWeek ?? 3;
+    return `
+      <section class="card">
+        <div class="h1">Jing / Sexe</div>
+        <p class="p">Objectif: orgasmes possibles, éjaculations choisies (2–3/sem à ton âge, selon énergie).</p>
+        <div class="hr"></div>
+
+        <div class="row">
+          <div class="col">
+            <div class="badge"><span class="dot ${ej<=target? "ok":"warn"}"></span>Éjaculations semaine: <b>${ej}/${target}</b></div>
+            <div style="height:10px"></div>
+            <button class="btn" id="btnEjacPlus">+1 éjaculation</button>
+            <button class="btn secondary" id="btnEjacMinus">-1</button>
+          </div>
+          <div class="col">
+            <label>Cible / semaine</label>
+            <input class="input" id="inEjacTarget" type="number" min="0" max="14" value="${target}" />
+            <div style="height:10px"></div>
+            <button class="btn secondary" id="btnSaveEjacTarget">Enregistrer</button>
+          </div>
+        </div>
+
+        <div class="hr"></div>
+        <div class="small note">
+          Indicateurs pratiques que “ça remonte”: érections matinales, énergie stable, sperme plus dense lors des éjaculations réelles.
+        </div>
+      </section>
+    `;
+  }
+
+  function toCSV(rows){
+    const esc = (v)=> {
+      const s = String(v ?? "");
+      return /[",\n]/.test(s) ? `"${s.replaceAll('"','""')}"` : s;
+    };
+    const headers = Object.keys(rows[0] || {});
+    const lines = [headers.map(esc).join(",")];
+    for(const r of rows){
+      lines.push(headers.map(h=>esc(r[h])).join(","));
+    }
+    return lines.join("\n");
+  }
+
+  function pageImport(){
+    return `
+      <section class="card">
+        <div class="h1">Import / Export</div>
+        <p class="p">Export JSON (complet), Export CSV (mesures). Import JSON (remplace l’état).</p>
+        <div class="hr"></div>
+
+        <div class="row">
+          <div class="col">
+            <button class="btn" id="btnExportJSON">Exporter JSON</button>
+            <button class="btn secondary" id="btnExportCSV">Exporter CSV (mesures)</button>
+          </div>
+          <div class="col">
+            <label>Importer JSON</label>
+            <input class="input" id="fileImport" type="file" accept=".json,application/json" />
+            <div style="height:10px"></div>
+            <button class="btn danger" id="btnImportJSON">Importer (remplace)</button>
+          </div>
+        </div>
+
+        <div class="hr"></div>
+        <div class="small note">
+          Conseil: fais un export JSON avant toute importation.
+        </div>
+      </section>
+    `;
+  }
+
+function pageSettings(){
     return `
       <section class="card">
         <div class="h1">Paramètres</div>
@@ -427,6 +548,17 @@
             <select class="input" id="selTheme">
               <option value="dark" ${state.theme==="dark"?"selected":""}>Sombre</option>
               <option value="light" ${state.theme==="light"?"selected":""}>Clair</option>
+            </select>
+          </div>
+          <div class="col">
+            <label>Couleur HUD</label>
+            <select class="input" id="selAccent">
+              <option value="#4fd1c5">Jarvis (cyan)</option>
+              <option value="#fb923c">X‑VISION (orange)</option>
+              <option value="#34d399">SHIELD (vert)</option>
+              <option value="#60a5fa">Bleu</option>
+              <option value="#fb7185">Rouge</option>
+              <option value="#ffffff">Blanc</option>
             </select>
           </div>
           <div class="col">
@@ -452,6 +584,8 @@
       case "plan": html=pagePlan(); break;
       case "recipes": html=pageRecipes(); break;
       case "tracker": html=pageTracker(); break;
+      case "jing": html=pageJing(); break;
+      case "import": html=pageImport(); break;
       case "timer": html=pageTimer(); break;
       case "reminders": html=pageReminders(); break;
       case "library": html=pageLibrary(); break;
@@ -882,9 +1016,61 @@
       });
     }
 
+    // Jing page
+    if($("#btnEjacPlus")){
+      $("#btnEjacPlus").onclick=()=>{ state.jing = state.jing || {}; state.jing.ejacThisWeek = (state.jing.ejacThisWeek||0)+1; save(); render(); };
+      $("#btnEjacMinus").onclick=()=>{ state.jing = state.jing || {}; state.jing.ejacThisWeek = Math.max(0,(state.jing.ejacThisWeek||0)-1); save(); render(); };
+      $("#btnSaveEjacTarget").onclick=()=>{ state.jing = state.jing || {}; state.jing.targetEjacPerWeek = Math.max(0, parseInt($("#inEjacTarget").value,10)||0); save(); toast("Cible enregistrée."); render(); };
+    }
+
+    // Import / Export
+    if($("#btnExportJSON")){
+      $("#btnExportJSON").onclick=()=>{
+        const blob=new Blob([JSON.stringify(state,null,2)], {type:"application/json"});
+        const url=URL.createObjectURL(blob);
+        const a=document.createElement("a");
+        a.href=url; a.download=`internal-vision-v2-export-${todayKey()}.json`; a.click();
+        URL.revokeObjectURL(url);
+      };
+      $("#btnExportCSV").onclick=()=>{
+        const rows=[];
+        const pushSeries=(name, arr)=>{ (arr||[]).forEach(p=>rows.push({t:p.t, metric:name, value:p.v})); };
+        pushSeries("weightKg", state.measurements.weightKg);
+        pushSeries("waistCm", state.measurements.waistCm);
+        pushSeries("sleepH", state.measurements.sleepH);
+        pushSeries("energy10", state.measurements.energy10);
+        pushSeries("libido10", state.measurements.libido10);
+        if(rows.length===0) return alert("Pas de mesures.");
+        const csv = toCSV(rows);
+        const blob=new Blob([csv], {type:"text/csv"});
+        const url=URL.createObjectURL(blob);
+        const a=document.createElement("a");
+        a.href=url; a.download=`internal-vision-measures-${todayKey()}.csv`; a.click();
+        URL.revokeObjectURL(url);
+      };
+      $("#btnImportJSON").onclick=async()=>{
+        const f = $("#fileImport").files?.[0];
+        if(!f) return alert("Choisis un fichier .json");
+        if(!confirm("Importer va remplacer l’état actuel. Continuer ?")) return;
+        const txt = await f.text();
+        try{
+          const obj = JSON.parse(txt);
+          localStorage.setItem(STORE_KEY, JSON.stringify(obj));
+          location.reload();
+        }catch(e){
+          alert("JSON invalide: "+e.message);
+        }
+      };
+    }
+
     // Settings
     if($("#selTheme")){
       $("#selTheme").onchange=()=>{ state.theme=$("#selTheme").value; save(); render(); };
+      const selA = $("#selAccent");
+      if(selA){
+        selA.value = state.accent?.color || "#4fd1c5";
+        selA.onchange = ()=>{ state.accent = state.accent || {}; state.accent.color = selA.value; save(); render(); };
+      }
       $("#btnSW").onclick=async()=>{
         try{
           if("serviceWorker" in navigator){

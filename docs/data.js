@@ -1,7 +1,7 @@
 window.IV_DATA = {
   meta: {
     title: "Internal-Vision",
-    version: "1.0.0",
+    version: "2.0.0",
     disclaimer: [
       "Information éducative. Ne remplace pas un avis médical.",
       "Si HTA, trouble thyroïde, traitement anticoagulant, pathologie hépatique/vésicule, antécédent de calculs, ou douleur pelvienne/prostatique: avis médical avant usage intensif de gingembre/curcuma/poivre, ou supplémentation.",
@@ -155,3 +155,30 @@ window.IV_DATA = {
   };
   weeks.forEach((w)=>{ w.days = Array.from({length:7}, (_,i)=> mkDay(w.week, i)); });
 })();
+
+
+// V2: recettes supplémentaires (placeholders propres) — tu peux étendre ici.
+window.IV_DATA.recipes.push(
+  {
+    id:"r_boeuf_ail",
+    title:"Bœuf à l’ail (zinc) + légumes",
+    timeMin:15, servings:1,
+    ingredients:["Bœuf 150–250 g","Ail 1–2 gousses","Oignon","Légumes (brocoli/courgette)","Huile d’olive","Sel"],
+    steps:["Saisir bœuf 2–3 min.","Ajouter ail/oignon + légumes 6–8 min.","Servir, huile d’olive à la fin."],
+    benefits:["Zinc + protéines","Ail/oignon: soutien métabolique","Repas simple: insuline stable"],
+    cautions:["Si reflux: éviter repas trop épicé le soir."],
+    mtc:["Chaud + ‘tonifiant’ (lecture traditionnelle)"],
+    ayurveda:["Bon pour Kapha; si Pitta: limiter ail si brûlures."]
+  },
+  {
+    id:"r_yaourt_tiede",
+    title:"Bol tiède (option) : fromage blanc + noix + cannelle",
+    timeMin:4, servings:1,
+    ingredients:["Fromage blanc (si toléré)","Noix","Cannelle","Option: miel très léger"],
+    steps:["Mélanger. Si sensible au froid: laisser revenir à température + cannelle."],
+    benefits:["Protéines + lipides","Satiété"],
+    cautions:["Si digestion lente/intolérance lactose: éviter."],
+    mtc:["Produits laitiers = parfois ‘humidité’ chez certains: adapter."],
+    ayurveda:["Si Kapha élevé: portion petite, cannelle utile."]
+  }
+);

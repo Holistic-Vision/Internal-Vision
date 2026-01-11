@@ -1,4 +1,4 @@
-const CACHE = "internal-vision-v1";
+const CACHE = "internal-vision-v2";
 const ASSETS = ["./","./index.html","./styles.css","./data.js","./app.js","./manifest.json"];
 self.addEventListener("install",(e)=>{e.waitUntil((async()=>{const c=await caches.open(CACHE);await c.addAll(ASSETS);self.skipWaiting();})());});
 self.addEventListener("activate",(e)=>{e.waitUntil((async()=>{const keys=await caches.keys();await Promise.all(keys.map(k=>(k===CACHE)?null:caches.delete(k)));self.clients.claim();})());});
