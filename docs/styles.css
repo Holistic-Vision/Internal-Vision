@@ -1,0 +1,253 @@
+:root{
+  --bg:#0b0f14;
+  --panel:#101826;
+  --panel2:#0f1420;
+  --text:#e9f0ff;
+  --muted:#9fb2d6;
+  --accent:#4fd1c5;
+  --accent2:#60a5fa;
+  --danger:#fb7185;
+  --ok:#34d399;
+  --warn:#fbbf24;
+
+  --radius:18px;
+  --shadow: 0 18px 40px rgba(0,0,0,.45);
+  --border: 1px solid rgba(255,255,255,.08);
+  --pad: 14px;
+  --tap: 48px;
+
+  --safe-top: env(safe-area-inset-top);
+  --safe-bot: env(safe-area-inset-bottom);
+}
+
+[data-theme="light"]{
+  --bg:#f5f7fb;
+  --panel:#ffffff;
+  --panel2:#f1f5ff;
+  --text:#0b1220;
+  --muted:#44536b;
+  --border: 1px solid rgba(10,15,20,.10);
+  --shadow: 0 18px 40px rgba(15,30,60,.12);
+}
+
+*{box-sizing:border-box}
+html,body{height:100%}
+body{
+  margin:0;
+  background:var(--bg);
+  color:var(--text);
+  font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial;
+  -webkit-font-smoothing:antialiased;
+  overflow-x:hidden;
+}
+
+.topbar{
+  position:sticky; top:0; z-index:20;
+  display:flex; align-items:center; gap:10px;
+  padding: calc(var(--pad) + var(--safe-top)) var(--pad) var(--pad) var(--pad);
+  background: linear-gradient(180deg, rgba(0,0,0,.55), rgba(0,0,0,0)) , var(--bg);
+  backdrop-filter: blur(10px);
+}
+
+.brand{min-width:0; flex:1}
+.brandTitle{font-size:16px; font-weight:800; letter-spacing:.3px}
+.brandSub{
+  font-size:12px; color:var(--muted);
+  white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+}
+
+.topActions{display:flex; gap:8px}
+
+.iconbtn{
+  width:var(--tap); height:var(--tap);
+  border-radius:14px;
+  border: var(--border);
+  background: color-mix(in oklab, var(--panel), transparent 10%);
+  color:var(--text);
+  display:grid; place-items:center;
+  box-shadow: none;
+}
+
+.pill{
+  height:var(--tap);
+  padding:0 12px;
+  border-radius:999px;
+  border: var(--border);
+  background: color-mix(in oklab, var(--panel), transparent 10%);
+  color:var(--text);
+  font-weight:700;
+}
+
+.burger{
+  width:20px; height:2px; background:var(--text); position:relative; display:block;
+}
+.burger::before,.burger::after{
+  content:""; position:absolute; left:0; width:20px; height:2px; background:var(--text);
+}
+.burger::before{top:-6px}
+.burger::after{top:6px}
+
+.drawer{
+  position:fixed; inset:0 auto 0 0; width:min(320px, 88vw);
+  background: var(--panel);
+  transform: translateX(-105%);
+  transition: transform .25s ease;
+  z-index:40;
+  box-shadow: var(--shadow);
+  border-right: var(--border);
+  display:flex; flex-direction:column;
+}
+.drawer.open{ transform: translateX(0) }
+
+.drawerHead{
+  display:flex; align-items:center; justify-content:space-between;
+  padding: var(--pad);
+  border-bottom: var(--border);
+}
+.drawerTitle{font-weight:900}
+.drawerFooter{padding: var(--pad); border-top: var(--border)}
+.mini{font-size:12px; color:var(--muted); line-height:1.35}
+
+.nav{padding: 8px; display:flex; flex-direction:column; gap:8px; overflow:auto}
+.navItem{
+  height:var(--tap);
+  border-radius:14px;
+  border: var(--border);
+  background: var(--panel2);
+  color:var(--text);
+  text-align:left;
+  padding:0 12px;
+  font-weight:800;
+}
+.navItem.active{
+  outline: 2px solid color-mix(in oklab, var(--accent), transparent 55%);
+}
+
+.backdrop{
+  position:fixed; inset:0;
+  background: rgba(0,0,0,.55);
+  z-index:30;
+}
+
+.main{
+  padding: 12px var(--pad) calc(84px + var(--safe-bot)) var(--pad);
+  max-width: 980px;
+  margin: 0 auto;
+}
+
+.card{
+  background: var(--panel);
+  border: var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 14px;
+  margin: 10px 0;
+}
+
+.row{display:flex; gap:10px; flex-wrap:wrap}
+.col{flex:1; min-width: 260px}
+.h1{font-size:18px; font-weight:950; margin:0 0 6px 0}
+.h2{font-size:14px; font-weight:900; margin:0 0 8px 0}
+.p{margin:0; color:var(--muted); line-height:1.45; font-size:13px}
+.hr{height:1px; background:rgba(255,255,255,.08); margin:12px 0}
+[data-theme="light"] .hr{background:rgba(0,0,0,.10)}
+
+.kpis{display:grid; grid-template-columns:repeat(2,1fr); gap:10px}
+.kpi{
+  border: var(--border);
+  border-radius: 16px;
+  padding: 12px;
+  background: var(--panel2);
+}
+.kpiVal{font-size:18px; font-weight:950}
+.kpiLab{font-size:12px; color:var(--muted); margin-top:2px}
+
+.badge{
+  display:inline-flex; align-items:center; gap:8px;
+  padding:6px 10px;
+  border-radius:999px;
+  border: var(--border);
+  background: var(--panel2);
+  font-size:12px;
+  color: var(--muted);
+  font-weight:800;
+}
+.dot{width:10px;height:10px;border-radius:50%}
+.dot.ok{background:var(--ok)}
+.dot.warn{background:var(--warn)}
+.dot.danger{background:var(--danger)}
+
+.btn{
+  height:var(--tap);
+  border-radius: 14px;
+  border: var(--border);
+  background: color-mix(in oklab, var(--accent), transparent 70%);
+  color: var(--text);
+  font-weight:950;
+  padding:0 12px;
+}
+.btn.secondary{
+  background: var(--panel2);
+  font-weight:900;
+}
+.btn.danger{
+  background: color-mix(in oklab, var(--danger), transparent 70%);
+}
+
+.input, select, textarea{
+  width:100%;
+  border-radius: 14px;
+  border: var(--border);
+  background: var(--panel2);
+  color: var(--text);
+  padding: 12px;
+  font-weight:700;
+  outline: none;
+}
+label{font-size:12px; color:var(--muted); font-weight:900}
+.form{display:grid; gap:10px}
+
+.list{display:flex; flex-direction:column; gap:10px}
+.item{
+  border: var(--border);
+  border-radius: 16px;
+  background: var(--panel2);
+  padding: 12px;
+}
+.itemTop{display:flex; align-items:flex-start; justify-content:space-between; gap:10px}
+.itemTitle{font-weight:950}
+.itemMeta{font-size:12px; color:var(--muted); margin-top:3px}
+.itemActions{display:flex; gap:8px; flex-wrap:wrap; margin-top:10px}
+
+.bottombar{
+  position:fixed; left:0; right:0; bottom:0; z-index:15;
+  padding: 10px var(--pad) calc(10px + var(--safe-bot)) var(--pad);
+  background: color-mix(in oklab, var(--bg), transparent 10%);
+  backdrop-filter: blur(12px);
+  border-top: var(--border);
+  display:flex; gap:8px; justify-content:space-between;
+}
+.tab{
+  flex:1;
+  height: 44px;
+  border-radius: 14px;
+  border: var(--border);
+  background: var(--panel);
+  color: var(--text);
+  font-weight:900;
+}
+.tab.active{ outline:2px solid color-mix(in oklab, var(--accent2), transparent 55%) }
+
+canvas{
+  width:100%;
+  height: 220px;
+  border-radius: 16px;
+  border: var(--border);
+  background: var(--panel2);
+}
+
+.small{font-size:12px; color:var(--muted); line-height:1.45}
+.note{
+  border-left: 3px solid color-mix(in oklab, var(--accent2), transparent 30%);
+  padding-left: 10px;
+}
