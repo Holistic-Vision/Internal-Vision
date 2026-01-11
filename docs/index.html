@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <meta name="theme-color" content="#0b0f14" />
+  <title>Internal-Vision — 4 semaines</title>
+  <link rel="manifest" href="manifest.json" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+
+<body>
+  <header class="topbar">
+    <button class="iconbtn" id="btnMenu" aria-label="Menu">
+      <span class="burger"></span>
+    </button>
+
+    <div class="brand">
+      <div class="brandTitle">Internal-Vision</div>
+      <div class="brandSub">Testostérone • Énergie • Ventre • Fertilité — 4 semaines</div>
+    </div>
+
+    <div class="topActions">
+      <button class="pill" id="btnTheme" title="Basculer thème">Sombre</button>
+      <button class="pill" id="btnInstall" title="Installer (PWA)">Installer</button>
+    </div>
+  </header>
+
+  <aside class="drawer" id="drawer" aria-hidden="true">
+    <div class="drawerHead">
+      <div class="drawerTitle">Navigation</div>
+      <button class="iconbtn" id="btnClose" aria-label="Fermer">
+        ✕
+      </button>
+    </div>
+
+    <nav class="nav">
+      <button class="navItem" data-route="dashboard">Tableau de bord</button>
+      <button class="navItem" data-route="plan">Plan 4 semaines</button>
+      <button class="navItem" data-route="recipes">Recettes</button>
+      <button class="navItem" data-route="tracker">Carnet de suivi</button>
+      <button class="navItem" data-route="timer">Minuterie</button>
+      <button class="navItem" data-route="reminders">Rappels & notifications</button>
+      <button class="navItem" data-route="library">Explications (MTC • Ayurveda • Médecine)</button>
+      <button class="navItem" data-route="settings">Paramètres</button>
+    </nav>
+
+    <div class="drawerFooter">
+      <div class="mini">
+        Données privées : stockées localement (LocalStorage). Aucun envoi réseau.
+      </div>
+    </div>
+  </aside>
+
+  <div class="backdrop" id="backdrop" hidden></div>
+
+  <main class="main" id="main">
+    <!-- pages injectées -->
+  </main>
+
+  <footer class="bottombar" id="bottombar">
+    <button class="tab" data-route="dashboard">Dashboard</button>
+    <button class="tab" data-route="plan">Plan</button>
+    <button class="tab" data-route="tracker">Suivi</button>
+    <button class="tab" data-route="timer">Timer</button>
+  </footer>
+
+  <script src="data.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
