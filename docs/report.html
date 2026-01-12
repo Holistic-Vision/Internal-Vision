@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="fr" data-theme="armor">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"/>
+  <title>Internal-Vision Rapport</title>
+  <link rel="stylesheet" href="styles.css"/>
+</head>
+<body>
+  <header class="topbar">
+    <button class="iconbtn" onclick="history.back()">←</button>
+    <div class="brand">
+      <div class="brandTitle">Rapport</div>
+      <div class="brandSub">Impression / PDF (navigateur)</div>
+    </div>
+    <div class="topActions">
+      <button class="pill" id="btnPrint">Imprimer</button>
+    </div>
+  </header>
+
+  <main class="main">
+    <section class="card">
+      <div class="h1" id="ttl">Rapport — Profil</div>
+      <p class="p" id="sub">Synthèse 30 jours.</p>
+      <div class="hr"></div>
+      <canvas id="chart" width="980" height="260"></canvas>
+      <div class="hr"></div>
+      <div class="kpis">
+        <div class="kpi"><div class="kpiVal" id="w">—</div><div class="kpiLab">Poids (dernier)</div></div>
+        <div class="kpi"><div class="kpiVal" id="wa">—</div><div class="kpiLab">Taille (dernier)</div></div>
+        <div class="kpi"><div class="kpiVal" id="sl">—</div><div class="kpiLab">Sommeil (dernier)</div></div>
+        <div class="kpi"><div class="kpiVal" id="en">—</div><div class="kpiLab">Énergie (dernier)</div></div>
+      </div>
+      <div class="hr"></div>
+      <div class="small note">Pour créer un PDF: Imprimer → “Enregistrer en PDF”.</div>
+    </section>
+  </main>
+
+  <script type="module">
+    import { load, activeData } from "./core/storage.js";
+    import { applyTheme } from "./themes/themes.js";
+
+    const state=load();
+    applyTheme(state.app.theme);
+
+    function last(arr){ return arr?.length ? arr[arr.length-1].v : null; }
+
+    const p = state.profiles.find(x=>x.id===state.activeProfileId);
+    document.getElementById("ttl").textContent = `Rapport — ${p?.name||"Profil"}`;
+
+    const d=activeData(state);
+    document.getElementById("w").textContent  = (last(d.measurements.weightKg) ?? "—") + " kg";
+    document.getElementById("wa").textContent = (last(d.measurements.waistCm) ?? "—") + " cm";
+    document.getElementById("sl").textContent = (last(d.measurements.sleepH) ?? "—") + " h";
+    document.getElementById("en").textContent = (last(d.measurements.energy10) ?? "—") + " /10";
+
+    function drawChart(series){
+      const c=document.getElementById("chart");
+      const ctx=c.getContext("2d");
+      const W=c.width,H=c.height;
+      ctx.clearRect(0,0,W,H);
+      ctx.lineWidth=1; ctx.strokeStyle="rgba(255,255,255,.08)";
+      for(let i=1;i<=4;i++){const y=(H*i)/5; ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(W,y); ctx.stroke();}
+      const lines = series.map(s=>({name:s.name, pts:(s.data||[]).slice(-30)})).filter(s=>s.pts.length>=2);
+      if(!lines.length){ ctx.fillStyle="rgba(255,255,255,.55)"; ctx.font="bold 14px system-ui"; ctx.fillText("Pas assez de données.", 18, 36); return; }
+      lines.forEach((s,idx)=>{
+        const vals=s.pts.map(p=>p.v); const min=Math.min(...vals), max=Math.max(...vals);
+        const pad=(max-min)===0?1:(max-min)*0.15; const lo=min-pad, hi=max+pad;
+        ctx.lineWidth=3;
+        ctx.strokeStyle = idx%2===0 ? "rgba(96,165,250,.95)" : "rgba(251,146,60,.95)";
+        ctx.beginPath();
+        s.pts.forEach((p,i)=>{
+          const x=(W-24)*(i/(s.pts.length-1))+12;
+          const y=H-((p.v-lo)/(hi-lo))*(H-28)-14;
+          if(i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
+        });
+        ctx.stroke();
+        ctx.fillStyle = ctx.strokeStyle;
+        ctx.font="bold 12px system-ui";
+        ctx.fillText(s.name, 14, 18+idx*16);
+      });
+    }
+
+    drawChart([
+      {name:"Taille (cm)", data:d.measurements.waistCm},
+      {name:"Sommeil (h)", data:d.measurements.sleepH},
+      {name:"Énergie (/10)", data:d.measurements.energy10},
+    ]);
+
+    document.getElementById("btnPrint").onclick=()=>window.print();
+  </script>
+</body>
+</html>

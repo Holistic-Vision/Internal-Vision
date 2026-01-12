@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="fr" data-theme="armor">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"/>
+  <title>Internal-Vision HUD</title>
+  <link rel="stylesheet" href="styles.css"/>
+  <style>
+    body{margin:0}
+    .hud{min-height:100vh;display:grid;place-items:center;padding:14px}
+    .hudGrid{width:min(980px,96vw);display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+    .big{font-size:34px;font-weight:950}
+  </style>
+</head>
+<body>
+  <div class="hud">
+    <div class="card" style="width:min(980px,96vw)">
+      <div class="h1">HUD</div>
+      <p class="p" id="pInfo">Mode HUD — lecture des données locales.</p>
+      <div class="hr"></div>
+      <div class="hudGrid">
+        <div class="kpi"><div class="kpiVal big" id="kEnergy">—</div><div class="kpiLab">Énergie (/10)</div></div>
+        <div class="kpi"><div class="kpiVal big" id="kWaist">—</div><div class="kpiLab">Taille (cm)</div></div>
+        <div class="kpi"><div class="kpiVal big" id="kSleep">—</div><div class="kpiLab">Sommeil (h)</div></div>
+        <div class="kpi"><div class="kpiVal big" id="kJing">—</div><div class="kpiLab">Jing (éjac / semaine)</div></div>
+      </div>
+      <div class="hr"></div>
+      <div class="row">
+        <button class="btn secondary" id="btnMirror">X‑VISION (miroir)</button>
+        <button class="btn" id="btnRefresh">Rafraîchir</button>
+      </div>
+    </div>
+  </div>
+
+  <script type="module">
+    import { load, activeData } from "./core/storage.js";
+    import { ensureJingWeek } from "./core/engine.js";
+    import { applyTheme } from "./themes/themes.js";
+
+    const qs=new URLSearchParams(location.search);
+    const theme=qs.get("theme")||null;
+
+    const state=load();
+    if(theme) state.app.theme=theme;
+    applyTheme(state.app.theme);
+
+    function last(arr){ return arr?.length ? arr[arr.length-1].v : null; }
+    function render(){
+      const d=activeData(state);
+      ensureJingWeek(d);
+      document.getElementById("kEnergy").textContent = last(d.measurements.energy10) ?? "—";
+      document.getElementById("kWaist").textContent  = last(d.measurements.waistCm) ?? "—";
+      document.getElementById("kSleep").textContent  = last(d.measurements.sleepH) ?? "—";
+      document.getElementById("kJing").textContent   = `${d.jing.ejacThisWeek}/${d.jing.targetPerWeek}`;
+    }
+    render();
+
+    let mirrored=false;
+    document.getElementById("btnMirror").onclick=()=>{
+      mirrored=!mirrored;
+      document.body.style.transform = mirrored ? "scaleX(-1)" : "none";
+    };
+    document.getElementById("btnRefresh").onclick=()=>location.reload();
+  </script>
+</body>
+</html>
